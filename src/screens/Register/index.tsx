@@ -2,8 +2,13 @@ import React, { useState } from "react";
 import { Alert, Modal, TouchableWithoutFeedback, Keyboard } from "react-native";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import uuid from "react-native-uuid";
 
 import { useForm } from "react-hook-form";
+import { useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { AppRoutesParamList } from "../../routes/app.routes";
 
 import { Button } from "../../components/Form/Button";
 import { CategorySelectButton } from "../../components/Form/CategorySelectButton";
@@ -27,9 +32,16 @@ const formSchema = Yup.object().shape({
     .positive("O valor não pode ser negativo!")
     .required("O valor é obrigatório!"),
 });
+
+const dataKey = "@gofinances:transactions";
 interface FormData {
   [key: string]: any;
 }
+
+type RegisterNavigationProps = BottomTabNavigationProp<
+  AppRoutesParamList,
+  "Cadastrar"
+>;
 
 export function Register() {
   const [transactionType, setTransactionType] = useState("");
@@ -42,10 +54,13 @@ export function Register() {
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(formSchema),
   });
+
+  const Navigation = useNavigation<RegisterNavigationProps>();
 
   function handleSetTransactionsTypeSelect(type: "income" | "outcome") {
     if (type === transactionType) {
@@ -63,7 +78,16 @@ export function Register() {
     setShowCategoryModal(false);
   }
 
-  function handleRegister(form: FormData) {
+  function clearState() {
+    reset();
+    setTransactionType("");
+    setCategory({
+      key: "category",
+      name: "categoria",
+    });
+  }
+
+  async function handleRegister(form: FormData) {
     if (!transactionType) {
       return Alert.alert("Selecione o tipo de transação!");
     }
@@ -75,13 +99,29 @@ export function Register() {
     if (!transactionType) {
       return Alert.alert("Selecione o tipo de transação!");
     }
-    const data = {
+    const newTransaction = {
+      id: String(uuid.v4()),
       name: form.name,
       amount: form.amount,
-      transactionType,
+      type: transactionType,
       category: category.key,
+      date: new Date(),
     };
 
+    try {
+      const data = await AsyncStorage.getItem(dataKey);
+      const currentData = data ? JSON.parse(data) : [];
+
+      const formattedData = [...currentData, newTransaction];
+
+      await AsyncStorage.setItem(dataKey, JSON.stringify(formattedData));
+
+      clearState();
+      Navigation.navigate("Listagem");
+    } catch (error) {
+      console.log(">>> HandleRegisterError: ", error);
+      Alert.alert("Não foi possível salvar a transação!");
+    }
   }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
