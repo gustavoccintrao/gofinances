@@ -140,7 +140,7 @@ export function Dashboard() {
           currency: "BRL",
         }),
         lastTransaction: lastTransactionEntries
-          ? `Últimna entrada dia ${lastTransactionEntries}`
+          ? `Última entrada dia ${lastTransactionEntries}`
           : "Nenhuma transação cadastrada",
       },
       expenses: {

@@ -33,14 +33,13 @@ const formSchema = Yup.object().shape({
     .required("O valor é obrigatório!"),
 });
 
-const dataKey = "@gofinances:transactions";
 interface FormData {
   [key: string]: any;
 }
 
 type RegisterNavigationProps = BottomTabNavigationProp<
-  AppRoutesParamList,
-  "Cadastrar"
+AppRoutesParamList,
+"Cadastrar"
 >;
 
 export function Register() {
@@ -50,7 +49,7 @@ export function Register() {
     key: "category",
     name: "Categoria",
   });
-
+  
   const {
     control,
     handleSubmit,
@@ -59,9 +58,9 @@ export function Register() {
   } = useForm({
     resolver: yupResolver(formSchema),
   });
-
+  
   const Navigation = useNavigation<RegisterNavigationProps>();
-
+  
   function handleSetTransactionsTypeSelect(type: "income" | "outcome") {
     if (type === transactionType) {
       setTransactionType("");
@@ -69,15 +68,15 @@ export function Register() {
     }
     setTransactionType(type);
   }
-
+  
   function handleOpenCategoryModal() {
     setShowCategoryModal(true);
   }
-
+  
   function handleCloseCategoryModal() {
     setShowCategoryModal(false);
   }
-
+  
   function clearState() {
     reset();
     setTransactionType("");
@@ -86,16 +85,16 @@ export function Register() {
       name: "categoria",
     });
   }
-
+  
   async function handleRegister(form: FormData) {
     if (!transactionType) {
       return Alert.alert("Selecione o tipo de transação!");
     }
-
+    
     if (category.key === "category") {
       return Alert.alert("Selecione a categoria!");
     }
-
+    
     if (!transactionType) {
       return Alert.alert("Selecione o tipo de transação!");
     }
@@ -107,11 +106,12 @@ export function Register() {
       category: category.key,
       date: new Date(),
     };
-
+    
     try {
+      const dataKey = "@gofinances:transactions";
       const data = await AsyncStorage.getItem(dataKey);
       const currentData = data ? JSON.parse(data) : [];
-
+      
       const formattedData = [...currentData, newTransaction];
 
       await AsyncStorage.setItem(dataKey, JSON.stringify(formattedData));
