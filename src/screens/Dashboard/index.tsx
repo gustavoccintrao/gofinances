@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { useAuth } from "../../hooks/auth";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "styled-components";
 
@@ -52,6 +53,7 @@ export function Dashboard() {
   );
 
   const theme = useTheme();
+  const {user, signOut} = useAuth();
 
   function getLastTransactionDate(
     collection: DataListProps[],
@@ -77,7 +79,7 @@ export function Dashboard() {
   }
 
   async function loadTransactions() {
-    const dataKey = "@gofinances:transactions";
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
@@ -188,16 +190,17 @@ export function Dashboard() {
               <UserInfo>
                 <Photo
                   source={{
-                    uri: "https://avatars.githubusercontent.com/u/32327841?v=4",
+                    uri: user.photo,
                   }}
                 />
 
                 <User>
                   <UserGreeting>Olá,</UserGreeting>
-                  <UserName>Gustavo!</UserName>
+                  <UserName>{user.name}!</UserName>
                 </User>
               </UserInfo>
-              <LogoutButton onPress={() => {}}>
+              <LogoutButton onPress={signOut}>
+
                 <Icon name="power" />
               </LogoutButton>
             </UserWrapper>

@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Platform } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
+import { useTheme } from "styled-components";
 
 import AppleLogo from "../../assets/apple.svg";
 import GoogleLogo from "../../assets/google.svg";
 import Logo from "../../assets/logo.svg";
-import { SignInSocialButton } from "../../components/SignInSocialButton";
+
 import { useAuth } from "../../hooks/auth";
+
+import { SignInSocialButton } from "../../components/SignInSocialButton";
 
 import {
   Container,
@@ -18,10 +22,33 @@ import {
 } from "./styles";
 
 export function SignIn() {
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  console.log(user.email);
-  
+  const theme = useTheme();
+  const { signInWithGoogle, signInWithApple } = useAuth();
+
+  async function handleSignInWithGoogle() {
+    try {
+      setIsLoading(true);
+      return await signInWithGoogle();
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Não foi possível conectar a conta Google");
+      setIsLoading(false);
+    }
+  }
+
+  async function handleSignInWithApple() {
+    try {
+      setIsLoading(true);
+      return await signInWithApple();
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Não foi possível conectar a conta Apple");
+      setIsLoading(false);
+    }
+  }
+
   return (
     <Container>
       <Header>
@@ -42,9 +69,26 @@ export function SignIn() {
 
       <Footer>
         <FooterWrapper>
-          <SignInSocialButton title="Entrar com Google" svg={GoogleLogo} />
-          <SignInSocialButton title="Entrar com Apple" svg={AppleLogo} />
+          <SignInSocialButton
+            title="Entrar com Google"
+            svg={GoogleLogo}
+            onPress={handleSignInWithGoogle}
+          />
+          {Platform.OS === "ios" && (
+            <SignInSocialButton
+              title="Entrar com Apple"
+              svg={AppleLogo}
+              onPress={handleSignInWithApple}
+            />
+          )}
         </FooterWrapper>
+
+        {isLoading && (
+          <ActivityIndicator
+            color={theme.colors.shape}
+            style={{ marginTop: 18 }}
+          />
+        )}
       </Footer>
     </Container>
   );

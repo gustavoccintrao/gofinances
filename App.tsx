@@ -9,7 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 
 import theme from "./src/global/styles/theme";
 
-import { NavigationContainer } from "@react-navigation/native";
+import { Routes } from "./src/routes"
 
 import {
   useFonts,
@@ -17,9 +17,8 @@ import {
   Poppins_500Medium,
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
-import { AppRoutes } from "./src/routes/app.routes";
-import { SignIn } from "./src/screens/SignIn";
-import { AuthProvider } from "./src/hooks/auth";
+
+import { AuthProvider, useAuth } from "./src/hooks/auth";
 
 export default function App() {
   SplashScreen.preventAutoHideAsync();
@@ -30,7 +29,9 @@ export default function App() {
     Poppins_700Bold,
   });
 
-  if (!fontsLoaded) {
+  const { userStorageLoading } = useAuth();
+
+  if (!fontsLoaded || userStorageLoading) {
     return null;
   }
 
@@ -38,13 +39,10 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <NavigationContainer>
         <StatusBar barStyle={"light-content"} />
-        {/* <AppRoutes /> */}
         <AuthProvider>
-          <SignIn />
+          <Routes />
         </AuthProvider>
-      </NavigationContainer>
     </ThemeProvider>
   );
 }
